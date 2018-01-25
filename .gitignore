@@ -1,0 +1,12 @@
+
+.idea/
+
+__pycache__/google_sheet.cpython-36.pyc
+
+__pycache__/scraper.cpython-36.pyc
+
+client_secret.json
+
+plus.dat
+
+*.pyc
