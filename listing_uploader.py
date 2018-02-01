@@ -10,6 +10,7 @@ from oauth2client import tools
 import gdata.sites.client
 import gdata.sites.data
 import google_sheet
+import codecs
 
 SCOPE = 'https://sites.google.com/feeds/'
 
@@ -18,8 +19,7 @@ SCOPE = 'https://sites.google.com/feeds/'
 # where <PROJECT_ID> is the ID of your project
 
 flow = flow_from_clientsecrets('client_secret.json',
-                               scope=SCOPE,
-                               redirect_uri='http://localhost')
+                               scope=SCOPE)
 
 storage = Storage('plus.dat')
 credentials = storage.get()
@@ -40,19 +40,20 @@ auth2token = gdata.gauth.OAuth2Token(client_id=credentials.client_id,
 
 
 # Create a gdata client
-client = gdata.sites.client.SitesClient(site='webapptestscraper', auth_token=auth2token)
+#client = gdata.sites.client.SitesClient(site='cars', auth_token=auth2token)
+#client = gdata.sites.client.SitesClient(source='my-app-name', site='cars')
+client = gdata.sites.client.SitesClient(site='cars', domain='inspect-x.com')
 
 # Authorize it
 auth2token.authorize(client)
 
 def upload(url, title, price, body, imgList):
-    try:
         # Call an API e.g. to get the site content feed
         uri = '%s?path=%s' % (client.MakeContentFeedUri(), '/today-s-listings')
 
         feed = client.GetContentFeed(uri=uri)
 
-        customBody ="<p>" + body + "</p><br>"
+        customBody = "<p>" + body + "</p><br>"
 
         for img in imgList:
             customBody += '<img style="display:block;margin-right:auto;margin-left:auto;text-align:center" src="' + img + '"><br>'
@@ -64,5 +65,3 @@ def upload(url, title, price, body, imgList):
                                   parent=feed.entry[0])
 
         print('Created. View it at: %s' % entry.GetAlternateLink().href)
-    except Exception:
-        print(Exception)

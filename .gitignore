@@ -10,3 +10,5 @@ client_secret.json
 plus.dat
 
 *.pyc
+
+*.json

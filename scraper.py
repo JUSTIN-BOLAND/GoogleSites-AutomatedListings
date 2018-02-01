@@ -10,7 +10,6 @@ import google_sheet
 import listing_uploader
 import urllib2
 
-
 def get_title(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     full_title = soup.title.get_text().split("-")
@@ -87,8 +86,8 @@ def main():
     # Loop through all listing URLS and create new page under dynamic pages
     # Update Inbound spreadsheet posted parameter
     for car in url_list:
-        #listing_uploader.upload(sheet_list(car)[0], sheet_list(car)[1], sheet_list(car)[2], sheet_list(car)[3], sheet_list(car)[4])
-        google_sheet.update_post(sheet_list(car)[0])
+        listing_uploader.upload(sheet_list(car)[0], sheet_list(car)[1], sheet_list(car)[2], sheet_list(car)[3], sheet_list(car)[4])
+        #google_sheet.update_post(sheet_list(car)[0])
 
 
 if __name__=='__main__':
