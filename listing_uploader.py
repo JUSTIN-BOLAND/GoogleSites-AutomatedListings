@@ -48,20 +48,26 @@ client = gdata.sites.client.SitesClient(site='cars', domain='inspect-x.com')
 auth2token.authorize(client)
 
 def upload(url, title, price, body, imgList):
-        # Call an API e.g. to get the site content feed
-        uri = '%s?path=%s' % (client.MakeContentFeedUri(), '/today-s-listings')
+        try:
+            # Call an API e.g. to get the site content feed
+            uri = '%s?path=%s' % (client.MakeContentFeedUri(), '/today-s-listings')
 
-        feed = client.GetContentFeed(uri=uri)
+            feed = client.GetContentFeed(uri=uri)
 
-        customBody = "<p>" + body + "</p><br>"
+            customBody = "<p>" + body + "</p><br>"
 
-        for img in imgList:
-            customBody += '<img style="display:block;margin-right:auto;margin-left:auto;text-align:center" src="' + img + '"><br>'
+            for img in imgList:
+                customBody += '<img style="display:block;margin-right:auto;margin-left:auto;text-align:center" src="' + img + '"><br>'
 
-        customTitle = title + " - " + price
+            customTitle = title + " - " + price
 
-        entry = client.CreatePage('webpage', customTitle,
-                                  html=customBody,
-                                  parent=feed.entry[0])
+            entry = client.CreatePage('webpage', customTitle,
+                                      html=customBody,
+                                      parent=feed.entry[0])
 
-        print('Created. View it at: %s' % entry.GetAlternateLink().href)
+            google_sheet.update_post(url)
+
+            print('Created. View it at: %s' % entry.GetAlternateLink().href)
+        except Exception:
+            pass
+            print(Exception)

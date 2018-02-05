@@ -12,6 +12,7 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+import gspread
 
 try:
     import argparse
@@ -60,6 +61,8 @@ def get_credentials():
 # Updates Inbound spreadsheet B column with 'y' if the URL was successfully posted to google sites
 def update_post(url):
     credentials = get_credentials()
+    gc = gspread.authorize(credentials)
+    wks = gc.open("Craigslist Listings").worksheet("Inbound")
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
                     'version=v4')
@@ -67,20 +70,9 @@ def update_post(url):
                               discoveryServiceUrl=discoveryUrl)
 
     spreadsheetId = '1bg3ZKf9e6qLRqyuZwCUT4-iZARHnEPw9pedwkcDxZ1o'
-    rangeName = 'Inbound!A1:B'
-    result = service.spreadsheets().values().get(spreadsheetId=spreadsheetId, range=rangeName).execute()
-    #request = service.spreadsheets().values().update(spreadsheetId=spreadsheetId, range='Inbound!B1:B', body='y')
-    values = result.get('values', [])
 
-    if not values:
-        print('No data found.')
-    else:
-        for row in values:
-            if(row[0] == url):
-                return True
-                # request.execute()
-    return True
-
+    cell = wks.find(url)
+    wks.update_cell(cell.row, cell.col+1, 'y')
 
 # Returns list of URLs from Inbound sheet to be scraped
 def pull_listings():

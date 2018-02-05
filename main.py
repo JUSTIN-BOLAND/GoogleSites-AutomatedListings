@@ -4,6 +4,8 @@ Created on Jan 24, 2018
 @author: Victor Fateh
 '''
 
+
+from __future__ import print_function
 from bs4 import BeautifulSoup
 import requests
 import google_sheet
@@ -85,10 +87,12 @@ def main():
 
     # Loop through all listing URLS and create new page under dynamic pages
     # Update Inbound spreadsheet posted parameter
+    #try:
     for car in url_list:
         listing_uploader.upload(sheet_list(car)[0], sheet_list(car)[1], sheet_list(car)[2], sheet_list(car)[3], sheet_list(car)[4])
         #google_sheet.update_post(sheet_list(car)[0])
-
+    #except Exception:
+        #print("Duplicate")
 
 if __name__=='__main__':
     main()
