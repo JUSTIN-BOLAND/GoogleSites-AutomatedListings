@@ -14,23 +14,35 @@ import urllib2
 
 def get_title(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    full_title = soup.title.get_text().split("-")
-    return full_title[0]
+    try:
+        full_title = soup.title.get_text().split("-")
+        return full_title[0]
+    except AttributeError:
+        err = "Title parse error for: " + url
+        return err
 
 
 def get_price(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    price_list = soup.find_all(class_="price")
-    return price_list[0].string
+    try:
+        price_list = soup.find_all(class_="price")
+        return price_list[0].string
+    except IndexError:
+        print("price index out of range")
+        return "$$$"
 
 
 def get_body(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     full_body = soup.find_all(id="postingbody")
-    clean_body = full_body[0].get_text()
-    final_body = clean_body.replace('QR Code Link to This Post', '')
-    final_body.replace('show contact info', '')
-    return final_body.lstrip()
+    try:
+        clean_body = full_body[0].get_text()
+        final_body = clean_body.replace('QR Code Link to This Post', '')
+        final_body.replace('show contact info', '')
+        return final_body.lstrip()
+    except AttributeError:
+        err = "Body parse error for: " + url
+        return err
 
 
 def raw_body(url):
@@ -43,26 +55,42 @@ def raw_body(url):
 def get_images(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     img_urls = []
-    for img in soup.find_all('a'):
-        if isinstance(img.get('href'), str):
-            if "https://images.craigslist.org/" in img.get('href'):
-                img_urls.append(img.get('href'))
-    return '\n'.join(img_urls)
-
+    try:
+        for img in soup.find_all('a'):
+            if isinstance(img.get('href'), str):
+                if "https://images.craigslist.org/" in img.get('href'):
+                    img_urls.append(img.get('href'))
+        return '\n'.join(img_urls)
+    except AttributeError:
+        err = "Images parse error for: " + url
+        return err
 
 def real_images(url):
     html_page = urllib2.urlopen(url)
     soup = BeautifulSoup(html_page, 'html.parser')
     images = []
-    for img in soup.findAll('a'):
-        if("https://images.craigslist.org/" in str(img.get('href'))):
-            images.append(img.get('href'))
-    return (images)
+    try:
+        for img in soup.findAll('a'):
+            if("https://images.craigslist.org/" in str(img.get('href'))):
+                images.append(img.get('href'))
+        return (images)
+    except AttributeError:
+        err = "Title parse error for: " + url
+        return err
+
 
 # Returns List of posting elements
 def sheet_list(url):
     sheet = [url, get_title(url), get_price(url), get_body(url), real_images(url)]
     return sheet
+
+def not_deleted(url):
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    removedFlag = soup.find_all(class_="removed")
+    if not removedFlag:
+        return True
+    else:
+        return False
 
 
 def main():
@@ -70,29 +98,14 @@ def main():
     # Filled with Craigslist URLS to scrape
     url_list = google_sheet.pull_listings()
 
-    # Populated with lists for each listing
-    # Element : [url, title, price, body, list of img url]
-
-    listing_sheet = []
-
-    try:
-        for car in url_list:
-            listing_sheet.append(sheet_list(car))
-    except IndexError:
-        print("End of URL list")
-
-    # Update google sheet with html elements
-    #google_sheet.send_listings(listing_sheet)
-    #print("Outbound sheet updated")
-
     # Loop through all listing URLS and create new page under dynamic pages
     # Update Inbound spreadsheet posted parameter
-    #try:
-    for car in url_list:
-        listing_uploader.upload(sheet_list(car)[0], sheet_list(car)[1], sheet_list(car)[2], sheet_list(car)[3], sheet_list(car)[4])
-        #google_sheet.update_post(sheet_list(car)[0])
-    #except Exception:
-        #print("Duplicate")
+    # [url, title, price, body, list of img url]
+    for index in range(len(url_list)):
+        if not_deleted(url_list[index]):
+            listing_uploader.upload(sheet_list(url_list[index])[0], sheet_list(url_list[index])[1], sheet_list(url_list[index])[2], sheet_list(url_list[index])[3], sheet_list(url_list[index])[4])
+        else:
+            print(url_list[index] + " has been deleted")
 
 if __name__=='__main__':
     main()

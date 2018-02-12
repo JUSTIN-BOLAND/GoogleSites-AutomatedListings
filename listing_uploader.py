@@ -10,13 +10,8 @@ from oauth2client import tools
 import gdata.sites.client
 import gdata.sites.data
 import google_sheet
-import codecs
 
 SCOPE = 'https://sites.google.com/feeds/'
-
-# client_secrets.json is downloaded from the API console:
-# https://code.google.com/apis/console/#project:<PROJECT_ID>:access
-# where <PROJECT_ID> is the ID of your project
 
 flow = flow_from_clientsecrets('client_secret.json',
                                scope=SCOPE)
@@ -27,10 +22,6 @@ credentials = storage.get()
 if credentials is None or credentials.invalid:
     credentials = tools.run_flow(flow, storage)
 
-# 'Monkey Patch' the data in the credentials into a gdata OAuth2Token
-# This is based on information in this blog post:
-# https://groups.google.com/forum/m/#!msg/google-apps-developer-blog/1pGRCivuSUI/3EAIioKp0-wJ
-
 auth2token = gdata.gauth.OAuth2Token(client_id=credentials.client_id,
   client_secret=credentials.client_secret,
   scope=SCOPE,
@@ -40,8 +31,6 @@ auth2token = gdata.gauth.OAuth2Token(client_id=credentials.client_id,
 
 
 # Create a gdata client
-#client = gdata.sites.client.SitesClient(site='cars', auth_token=auth2token)
-#client = gdata.sites.client.SitesClient(source='my-app-name', site='cars')
 client = gdata.sites.client.SitesClient(site='cars', domain='inspect-x.com')
 
 # Authorize it
@@ -68,6 +57,7 @@ def upload(url, title, price, body, imgList):
             google_sheet.update_post(url)
 
             print('Created. View it at: %s' % entry.GetAlternateLink().href)
+
         except Exception:
             pass
-            print(Exception)
+            print("Error posting, please check URL validity for: " + url)
