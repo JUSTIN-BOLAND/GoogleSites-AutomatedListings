@@ -12,6 +12,7 @@ import google_sheet
 import listing_uploader
 import urllib2
 import sys
+import datetime
 
 def get_title(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -85,8 +86,9 @@ def sheet_list(url):
         sheet = [url, get_title(url), get_price(url), get_body(url), real_images(url)]
         return sheet
     except Exception:
-        print("Error populating URL field" + Exception)
+        print("Error populating URL field" + str(Exception))
         return
+
 
 def not_deleted(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -98,7 +100,8 @@ def not_deleted(url):
 
 
 def main():
-    sys.stdout.write("Running...\n")
+    sys.stdout.write("---------------------------\n")
+    sys.stdout.write("Running... " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
     # Populate list directly from google sheet with inbounds
     # Filled with Craigslist URLS to scrape
     url_list = google_sheet.pull_listings()
@@ -109,12 +112,14 @@ def main():
 
     if len(url_list) > 0:
         for index in range(len(url_list)):
+            sys.stdout.write("Uploading... " + str(index) + "\n")
             if not_deleted(url_list[index]):
                 listing_uploader.upload(sheet_list(url_list[index])[0], sheet_list(url_list[index])[1], sheet_list(url_list[index])[2], sheet_list(url_list[index])[3], sheet_list(url_list[index])[4])
             else:
                 print(url_list[index] + " is no longer valid. Please delete listing.")
 
-    sys.stdout.write("Done Running\n")
+    sys.stdout.write("Finished Successfully " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main()

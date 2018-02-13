@@ -38,6 +38,7 @@ client = gdata.sites.client.SitesClient(site='cars', domain='inspect-x.com')
 # Authorize it
 auth2token.authorize(client)
 
+
 def upload(url, title, price, body, imgList):
         try:
             # Call an API e.g. to get the site content feed

@@ -101,12 +101,12 @@ def pull_listings():
         print('No data found.')
     else:
         for row in values:
-            if(row[1] == 'n'):
-                if(main.not_deleted(row[0])):
+            if row[1] == 'n':
+                if main.not_deleted(row[0]):
                     url_list.append(row[0])
                 else:
                     pass
-            if(row[1] == 'x'):
+            if row[1] == 'x':
                 REMOVE_LIST.append(row[0])
     return url_list
 
