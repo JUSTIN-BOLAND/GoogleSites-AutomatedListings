@@ -13,6 +13,7 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 import gspread
+import main
 
 try:
     import argparse
@@ -59,7 +60,7 @@ def get_credentials():
     return credentials
 
 # Updates Inbound spreadsheet B column with 'y' if the URL was successfully posted to google sites
-def update_post(url):
+def update_post(url, out_link):
     credentials = get_credentials()
     gc = gspread.authorize(credentials)
     wks = gc.open("Craigslist Listings").worksheet("Inbound")
@@ -73,6 +74,7 @@ def update_post(url):
 
     cell = wks.find(url)
     wks.update_cell(cell.row, cell.col+1, 'y')
+    wks.update_cell(cell.row, cell.col + 2, out_link)
 
 # Returns list of URLs from Inbound sheet to be scraped
 def pull_listings():
@@ -100,7 +102,10 @@ def pull_listings():
     else:
         for row in values:
             if(row[1] == 'n'):
-                url_list.append(row[0])
+                if(main.not_deleted(row[0])):
+                    url_list.append(row[0])
+                else:
+                    pass
             if(row[1] == 'x'):
                 REMOVE_LIST.append(row[0])
     return url_list
@@ -122,7 +127,6 @@ def send_listings(listing_sheet):
         "majorDimension": "ROWS",
         "values": listing_sheet
     }
-
 
     service.spreadsheets().values().append(spreadsheetId=spreadsheetId, range=rangeName, body=my_body, valueInputOption='USER_ENTERED').execute()
     print("Listings Sheet Updated with non-posted urls")

@@ -11,6 +11,8 @@ import gdata.sites.client
 import gdata.sites.data
 import google_sheet
 
+global GLOBAL_DUP
+
 SCOPE = 'https://sites.google.com/feeds/'
 
 flow = flow_from_clientsecrets('client_secret.json',
@@ -54,10 +56,10 @@ def upload(url, title, price, body, imgList):
                                       html=customBody,
                                       parent=feed.entry[0])
 
-            google_sheet.update_post(url)
+            google_sheet.update_post(url, entry.GetAlternateLink().href)
 
             print('Created. View it at: %s' % entry.GetAlternateLink().href)
 
         except Exception:
             pass
-            print("Error posting, please check URL validity for: " + url)
+            print("Error posting, please check google sheet for duplicates: " + url)

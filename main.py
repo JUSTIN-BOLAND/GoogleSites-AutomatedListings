@@ -11,6 +11,7 @@ import requests
 import google_sheet
 import listing_uploader
 import urllib2
+import sys
 
 def get_title(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -28,8 +29,7 @@ def get_price(url):
         price_list = soup.find_all(class_="price")
         return price_list[0].string
     except IndexError:
-        print("price index out of range")
-        return "$$$"
+        return "price-error"
 
 
 def get_body(url):
@@ -81,8 +81,12 @@ def real_images(url):
 
 # Returns List of posting elements
 def sheet_list(url):
-    sheet = [url, get_title(url), get_price(url), get_body(url), real_images(url)]
-    return sheet
+    try:
+        sheet = [url, get_title(url), get_price(url), get_body(url), real_images(url)]
+        return sheet
+    except Exception:
+        print("Error populating URL field" + Exception)
+        return
 
 def not_deleted(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -94,6 +98,7 @@ def not_deleted(url):
 
 
 def main():
+    sys.stdout.write("Running...\n")
     # Populate list directly from google sheet with inbounds
     # Filled with Craigslist URLS to scrape
     url_list = google_sheet.pull_listings()
@@ -101,11 +106,15 @@ def main():
     # Loop through all listing URLS and create new page under dynamic pages
     # Update Inbound spreadsheet posted parameter
     # [url, title, price, body, list of img url]
-    for index in range(len(url_list)):
-        if not_deleted(url_list[index]):
-            listing_uploader.upload(sheet_list(url_list[index])[0], sheet_list(url_list[index])[1], sheet_list(url_list[index])[2], sheet_list(url_list[index])[3], sheet_list(url_list[index])[4])
-        else:
-            print(url_list[index] + " has been deleted")
+
+    if len(url_list) > 0:
+        for index in range(len(url_list)):
+            if not_deleted(url_list[index]):
+                listing_uploader.upload(sheet_list(url_list[index])[0], sheet_list(url_list[index])[1], sheet_list(url_list[index])[2], sheet_list(url_list[index])[3], sheet_list(url_list[index])[4])
+            else:
+                print(url_list[index] + " is no longer valid. Please delete listing.")
+
+    sys.stdout.write("Done Running\n")
 
 if __name__=='__main__':
     main()
