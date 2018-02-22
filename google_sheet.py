@@ -59,22 +59,30 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+
 # Updates Inbound spreadsheet B column with 'y' if the URL was successfully posted to google sites
 def update_post(url, out_link):
     credentials = get_credentials()
     gc = gspread.authorize(credentials)
     wks = gc.open("Craigslist Listings").worksheet("Inbound")
-    http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-                    'version=v4')
-    service = discovery.build('sheets', 'v4', http=http,
-                              discoveryServiceUrl=discoveryUrl)
-
-    spreadsheetId = '1bg3ZKf9e6qLRqyuZwCUT4-iZARHnEPw9pedwkcDxZ1o'
 
     cell = wks.find(url)
     wks.update_cell(cell.row, cell.col+1, 'y')
     wks.update_cell(cell.row, cell.col + 2, out_link)
+
+
+def clean_expired():
+    credentials = get_credentials()
+    gc = gspread.authorize(credentials)
+    wks = gc.open("Craigslist Listings").worksheet("Inbound")
+
+    values_list = wks.col_values(1)
+
+    for url in values_list:
+        if main.not_deleted(url):
+            cell = wks.find(url)
+            wks.delete_row(cell.row)
+
 
 # Returns list of URLs from Inbound sheet to be scraped
 def pull_listings():
@@ -100,14 +108,17 @@ def pull_listings():
     if not values:
         print('No data found.')
     else:
-        for row in values:
-            if row[1] == 'n':
-                if main.not_deleted(row[0]):
-                    url_list.append(row[0])
-                else:
-                    pass
-            if row[1] == 'x':
-                REMOVE_LIST.append(row[0])
+        try:
+            for row in values:
+                if row[1] == 'n':
+                    if main.not_deleted(row[0]):
+                        url_list.append(row[0])
+                    else:
+                        pass
+                if row[1] == 'x':
+                    REMOVE_LIST.append(row[0])
+        except IndexError:
+            pass
     return url_list
 
 

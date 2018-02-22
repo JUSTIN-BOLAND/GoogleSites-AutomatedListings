@@ -92,8 +92,8 @@ def sheet_list(url):
 
 def not_deleted(url):
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
-    removedFlag = soup.find_all(class_="removed")
-    if not removedFlag:
+    flag = soup.find_all(class_="removed")
+    if not flag:
         return True
     else:
         return False
@@ -104,6 +104,7 @@ def main():
     sys.stdout.write("Running... " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
     # Populate list directly from google sheet with inbounds
     # Filled with Craigslist URLS to scrape
+    #google_sheet.clean_expired()
     url_list = google_sheet.pull_listings()
 
     # Loop through all listing URLS and create new page under dynamic pages
@@ -112,12 +113,14 @@ def main():
 
     if len(url_list) > 0:
         for index in range(len(url_list)):
-            sys.stdout.write("Uploading... " + str(index) + "\n")
+            sys.stdout.write("     Uploading... " + str(index) + "\n")
             if not_deleted(url_list[index]):
                 listing_uploader.upload(sheet_list(url_list[index])[0], sheet_list(url_list[index])[1], sheet_list(url_list[index])[2], sheet_list(url_list[index])[3], sheet_list(url_list[index])[4])
             else:
-                print(url_list[index] + " is no longer valid. Please delete listing.")
-
+                if google_sheet.clean_expired():
+                    sys.stdout.write("     Cleaning Dead URL from sheet: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                else:
+                    sys.stdout.write("     ERROR Removing: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
     sys.stdout.write("Finished Successfully " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
 
