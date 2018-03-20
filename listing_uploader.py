@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jan 24, 2018
 
 @author: Victor Fateh
-'''
+"""
 
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
@@ -10,8 +10,7 @@ from oauth2client import tools
 import gdata.sites.client
 import gdata.sites.data
 import google_sheet
-
-global GLOBAL_DUP
+import sys
 
 SCOPE = 'https://sites.google.com/feeds/'
 
@@ -46,21 +45,21 @@ def upload(url, title, price, body, imgList):
 
             feed = client.GetContentFeed(uri=uri)
 
-            customBody = "<p>" + body + "</p><br>"
+            full_body = "<p>" + body + "</p><br>"
 
             for img in imgList:
-                customBody += '<img style="display:block;margin-right:auto;margin-left:auto;text-align:center" src="' + img + '"><br>'
+                full_body += '<img style="display:block;margin-right:auto;margin-left:auto;text-align:center" src="' + img + '"><br>'
 
-            customTitle = title + " - " + price
+            full_title = title + " - " + price
 
-            entry = client.CreatePage('webpage', customTitle,
-                                      html=customBody,
+            entry = client.CreatePage('webpage', full_title,
+                                      html=full_body,
                                       parent=feed.entry[0])
 
             google_sheet.update_post(url, entry.GetAlternateLink().href)
 
-            print('Created. View it at: %s' % entry.GetAlternateLink().href)
+            sys.stdout.write('Created. View it at: %s' % entry.GetAlternateLink().href)
 
         except Exception:
             pass
-            print("Error posting, please check google sheet for duplicates: " + url)
+            sys.stdout.write("Error posting, please check google sheet for duplicates: " + url)

@@ -1,8 +1,8 @@
-'''
+"""
 Created on Jan 24, 2018
 
 @author: Victor Fateh
-'''
+"""
 
 from __future__ import print_function
 import httplib2
@@ -83,7 +83,6 @@ def clean_expired():
             cell = wks.find(url)
             wks.delete_row(cell.row)
 
-
 # Returns list of URLs from Inbound sheet to be scraped
 def pull_listings():
     """
@@ -120,25 +119,4 @@ def pull_listings():
         except IndexError:
             pass
     return url_list
-
-
-# Uploads scraped content to Listings spreadsheet
-def send_listings(listing_sheet):
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-                    'version=v4')
-    service = discovery.build('sheets', 'v4', http=http,
-                              discoveryServiceUrl=discoveryUrl)
-
-    spreadsheetId = '1bg3ZKf9e6qLRqyuZwCUT4-iZARHnEPw9pedwkcDxZ1o'
-    rangeName = 'Listings!A1:F'
-    my_body = {
-        "range": "Listings!A1:F",
-        "majorDimension": "ROWS",
-        "values": listing_sheet
-    }
-
-    service.spreadsheets().values().append(spreadsheetId=spreadsheetId, range=rangeName, body=my_body, valueInputOption='USER_ENTERED').execute()
-    print("Listings Sheet Updated with non-posted urls")
 
