@@ -10,7 +10,7 @@ import requests
 import google_sheet
 import listing_uploader
 import urllib2
-import sys
+# import sys
 import datetime
 
 
@@ -21,7 +21,8 @@ def get_title(url):
         return full_title[0]
     except AttributeError:
         err = "Title parse error for: " + url
-        sys.stdout.write("* " + err + "\n")
+        # sys.stdout.write("* " + err + "\n")
+        print("* " + err + "\n")
         return err
 
 
@@ -31,7 +32,8 @@ def get_price(url):
         price_list = soup.find_all(class_="price")
         return price_list[0].string
     except IndexError:
-        sys.stdout.write("* Error Pulling Pricing\n")
+        # sys.stdout.write("* Error Pulling Pricing\n")
+        print("* Error Pulling Pricing\n")
         return "price-error"
 
 
@@ -45,7 +47,8 @@ def get_body(url):
         return final_body.lstrip()
     except AttributeError:
         err = "Body parse error for: " + url
-        sys.stdout.write("* " + err + "\n")
+        # sys.stdout.write("* " + err + "\n")
+        print("* " + err + "\n")
         return err
 
 
@@ -81,7 +84,8 @@ def real_images(url):
         return images
     except AttributeError:
         err = "Title parse error for: " + url
-        sys.stdout.write("* " + err + "\n")
+        # sys.stdout.write("* " + err + "\n")
+        print("* " + err + "\n")
         return err
 
 
@@ -91,7 +95,8 @@ def sheet_list(url):
         sheet = [url, get_title(url), get_price(url), get_body(url), real_images(url)]
         return sheet
     except Exception:
-        sys.stdout.write("Error populating URL field" + str(Exception) + "\n")
+        # sys.stdout.write("Error populating URL field" + str(Exception) + "\n")
+        print("Error populating URL field" + str(Exception) + "\n")
         return
 
 
@@ -104,9 +109,11 @@ def not_deleted(url):
         return False
 
 
-def main():
-    sys.stdout.write("---------------------------\n")
-    sys.stdout.write("Running... " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+def main(event, context):
+    # sys.stdout.write("---------------------------\n")
+    # sys.stdout.write("Running... " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+    print("---------------------------\n")
+    print("Running... " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
     # Populate list directly from google sheet with inbounds
     # Filled with Craigslist URLS to scrape
@@ -117,16 +124,20 @@ def main():
     # [url, title, price, body, list of img url]
     if len(url_list) > 0:
         for index in range(len(url_list)):
-            sys.stdout.write("     Uploading... " + str(index+1) + "\n")
+            # sys.stdout.write("     Uploading... " + str(index+1) + "\n")
+            print("     Uploading... " + str(index + 1) + "\n")
             if not_deleted(url_list[index]):
                 listing_uploader.upload(sheet_list(url_list[index])[0], sheet_list(url_list[index])[1], sheet_list(url_list[index])[2], sheet_list(url_list[index])[3], sheet_list(url_list[index])[4])
             else:
                 if google_sheet.clean_expired():
-                    sys.stdout.write("     Cleaning Dead URL from sheet: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    # sys.stdout.write("     Cleaning Dead URL from sheet: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    print("     Cleaning Dead URL from sheet: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
                 else:
-                    sys.stdout.write("     ERROR Removing: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
-    sys.stdout.write("Finished Successfully " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    # sys.stdout.write("     ERROR Removing: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+                    print("     ERROR Removing: " + url_list[index] + " " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+    # sys.stdout.write("Finished Successfully " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+    print("Finished Successfully " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
 
 if __name__ == '__main__':
-    main()
+    main('', '')

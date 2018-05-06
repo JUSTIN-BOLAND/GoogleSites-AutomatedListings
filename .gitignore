@@ -12,3 +12,7 @@ plus.dat
 *.pyc
 
 *.json
+
+venv/
+
+dist/

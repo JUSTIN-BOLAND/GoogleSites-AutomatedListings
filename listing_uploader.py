@@ -10,7 +10,7 @@ from oauth2client import tools
 import gdata.sites.client
 import gdata.sites.data
 import google_sheet
-import sys
+# import sys
 
 SCOPE = 'https://sites.google.com/feeds/'
 
@@ -58,8 +58,10 @@ def upload(url, title, price, body, imgList):
 
             google_sheet.update_post(url, entry.GetAlternateLink().href)
 
-            sys.stdout.write('Created. View it at: %s' % entry.GetAlternateLink().href)
+            # sys.stdout.write('Created. View it at: %s' % entry.GetAlternateLink().href)
+            print('Created. View it at: %s' % entry.GetAlternateLink().href)
 
         except Exception:
             pass
-            sys.stdout.write("Error posting, please check google sheet for duplicates: " + url)
+            # sys.stdout.write("Error posting, please check google sheet for duplicates: " + url)
+            print("Error posting, please check google sheet for duplicates: " + url)
